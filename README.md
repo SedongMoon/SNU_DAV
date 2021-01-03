@@ -3,7 +3,6 @@ This is a repository for the "Data Analysis and Visualization" class term projec
 이 repository는 2020년 2학기 서울대학교 데이터사이언스대학원 '데이터 분석과 시각화' 수업의 텀프로젝트를 위한 repository입니다.
 
 # Spatio-Temporal Visualization of Bus Line’s Congestion Level in Seoul (서울시 버스 노선 혼잡도의 시공간적 시각화)
-# ** Under working!
 
 # 0. About the project
 Visualization of spatiotemporal variations in crowding of buses in Seoul, South Korea
@@ -57,4 +56,4 @@ Jupyter Notebook
  - Pre-processed data: preprocessed.csv. Because the pre-processed data is large (~102 MB), it is compressed into preprocessed.zip. You can open the original file after unzipping it.
  
 ## Output
- - The final visualization file: CrowdingVisualization.html
+ - The final result: CrowdingVisualization.html. Because the file is large (~155 MB), it is compressed into CrowdingVisualization.zip. You can open the original file after unzipping it.
