@@ -12,11 +12,49 @@ Visualization of spatiotemporal variations in crowding of buses in Seoul, South 
 - User convenience of information acquisition through interaction
 
 # 1. Pre-Processing
-01_preprocessing.R
-Inputs
- - data sample
- - asdf
- - asdf
+Pre-processing is conducted by 01_preprocessing.R. This processes smartcard data into occupancy level and ridership by time, bus lines, and sections.
+
+## Language
+R
+
+## Development Environment
+- R >= 3.6.2
+- RStudio >= 1.2.5033
+
+## Packages
+ - data.table
+ - timeSeries
+ - dplyr
+ - imputeTS
+ - zoo
+ - here
+ - bit64
+ - lubridate
+
+## Inputs
+ - Smartcard data: Because the original data is large (>4 GB/day), only the sample data is uploaded here(smartcarddata_sample.csv).
+ - List of buses: Buslist.csv
+ - List of bus stops: Stationlist.csv
+ 
+## Output
+ - Pre-processed data: preprocessed.csv. Because the pre-processed data is large (~102 MB), it is compressed into preprocessed.zip. You can open the original file after unzipping it.
 
 # 2. Visualization
-02_visualization.ipynb
+The main visualization is conducted by 02_visualization.ipynb. This visualizes the pre-processed data.
+
+## Language
+Jupyter Notebook
+
+## Development Environment
+- conda >= 4.9.2
+- Jupyter Notebook >= 6.1.5
+
+## Packages
+- keplergl >= 0.2.2
+- pandas >= 1.1.5
+
+## Input
+ - Pre-processed data: preprocessed.csv. Because the pre-processed data is large (~102 MB), it is compressed into preprocessed.zip. You can open the original file after unzipping it.
+ 
+## Output
+ - The final visualization file: CrowdingVisualization.html
