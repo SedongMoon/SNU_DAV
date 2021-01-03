@@ -1,14 +1,5 @@
-#================================== OccCalc v1.3 =====================================
+#================================== 01_OccCalc.R =====================================
 # This program calculates occupancy of buses based on transit card data.
-# <MODIFICATIONS>
-# ³ë¼±¹øÈ£ ³¡¿¡ '¹ø' Ãß°¡ (ÄÉÇÃ·¯¿¡¼­ string ÇüÅÂ·Î ÀĞÀ» ¼ö ÀÖµµ·Ï)
-# ½Ã°£´ë¸¦ (ÄÉÇÃ·¯¿¡¼­ ½Ã°è¿­·Î ¶ç¿ï ¼ö ÀÖµµ·Ï) datetime ÇüÅÂ·Î ³ªÅ¸³¿
-# ¹ö½º ³ë¼±º° geojson ÄÚµå µµÃâ
-# ¿îÇàÈ½¼ö, Æò±Õ¹èÂ÷°£°İ µµÃâ
-# ½Ã°£´ëº° ÆÄÀÏºĞÇÒÀº ¾ø¾Ú(ÇÊ¿ä¾øÀ»°Å°°À½)
-#
-# First made: 8 Mar 2018
-# Last Modification (v1.3): 10 Dec 2020
 #======================================================================================
 library(data.table)
 library(timeSeries)
@@ -19,47 +10,47 @@ library(here)
 library(bit64)
 library(lubridate)
 
-# ========== R ½ºÅ©¸³Æ® ÆÄÀÏÀÇ µğ·ºÅä¸®¸¦ working directory·Î ¼³Á¤ ==========
+# ========== R ìŠ¤í¬ë¦½íŠ¸ íŒŒì¼ì˜ ë””ë ‰í† ë¦¬ë¥¼ working directoryë¡œ ì„¤ì • ==========
 setwd(here())
 
-# ========== ½º¸¶Æ®Ä«µå µ¥ÀÌÅÍ ºÒ·¯¿À±â ==========
-total_bus <- c() # ÀüÃ¼ µ¥ÀÌÅÍ¸¦ ³ÖÀ» µ¥ÀÌÅÍÇÁ·¹ÀÓ
+# ========== ìŠ¤ë§ˆíŠ¸ì¹´ë“œ ë°ì´í„° ë¶ˆëŸ¬ì˜¤ê¸° ==========
+total_bus <- c() # ì „ì²´ ë°ì´í„°ë¥¼ ë„£ì„ ë°ì´í„°í”„ë ˆì„
 for(day in c(16,17,18,19,22)){
-  datapath <- "D:/01_data/" # ½º¸¶Æ®Ä«µå µ¥ÀÌÅÍ°¡ µé¾îÀÖ´Â Æú´õÀÇ °æ·Î¸¦ ¿©±â¿¡ ³ÖÀ» °Í!
+  datapath <- "D:/01_data/" # ìŠ¤ë§ˆíŠ¸ì¹´ë“œ ë°ì´í„°ê°€ ë“¤ì–´ìˆëŠ” í´ë”ì˜ ê²½ë¡œë¥¼ ì—¬ê¸°ì— ë„£ì„ ê²ƒ!
   busdata <- fread(paste0(datapath, "05", as.character(day), ".txt"))
-  busdata <- subset(busdata, ±³Åë¼ö´ÜÄÚµå<200 | ±³Åë¼ö´ÜÄÚµå>=300) # ¹ö½º¸¸ ÃßÃâ
+  busdata <- subset(busdata, êµí†µìˆ˜ë‹¨ì½”ë“œ<200 | êµí†µìˆ˜ë‹¨ì½”ë“œ>=300) # ë²„ìŠ¤ë§Œ ì¶”ì¶œ
   total_bus <- rbind(total_bus, busdata)
 }
 rm(busdata)
-total_bus <- total_bus[,c("Â÷·®µî·Ï¹øÈ£", "¿îÇàÃâ¹ßÀÏ½Ã", "³ë¼±ID_Á¤»ê»ç¾÷ÀÚ", "½ÂÂ÷ÀÏ½Ã", "½ÂÂ÷Á¤·ùÀåID_±³Åë»ç¾÷ÀÚ", "ÇÏÂ÷ÀÏ½Ã", "ÇÏÂ÷Á¤·ùÀåID_Á¤»ê»ç¾÷ÀÚ", "ÀÌ¿ë°´¼ö_´ÙÀÎ½Â")]
+total_bus <- total_bus[,c("ì°¨ëŸ‰ë“±ë¡ë²ˆí˜¸", "ìš´í–‰ì¶œë°œì¼ì‹œ", "ë…¸ì„ ID_ì •ì‚°ì‚¬ì—…ì", "ìŠ¹ì°¨ì¼ì‹œ", "ìŠ¹ì°¨ì •ë¥˜ì¥ID_êµí†µì‚¬ì—…ì", "í•˜ì°¨ì¼ì‹œ", "í•˜ì°¨ì •ë¥˜ì¥ID_ì •ì‚°ì‚¬ì—…ì", "ì´ìš©ê°ìˆ˜_ë‹¤ì¸ìŠ¹")]
 names(total_bus) <- c("vehicle","departure","line","boardtime","boardstation","alighttime","alightstation","multiple")
 
-# ========== ¹ö½º ³ë¼± ¹× Á¤·ùÀå ¸ñ·Ï ºÒ·¯¿À±â ==========
+# ========== ë²„ìŠ¤ ë…¸ì„  ë° ì •ë¥˜ì¥ ëª©ë¡ ë¶ˆëŸ¬ì˜¤ê¸° ==========
 buslist<-read.csv("Buslist.csv")
 stationlistAll<-read.csv("Stationlist.csv")
 
-# ========== totalresult: ÀüÃ³¸® °á°ú, basicstat: ±âÃÊÅë°è·®, geojson: geojson ==========
+# ========== totalresult: ì „ì²˜ë¦¬ ê²°ê³¼, basicstat: ê¸°ì´ˆí†µê³„ëŸ‰, geojson: geojson ==========
 totalresult <- c()
 basicstat <- c()
 geojson <- c()
 
-# ========== ³ë¼±º° ¹İº¹ ==========
+# ========== ë…¸ì„ ë³„ ë°˜ë³µ ==========
 for(i in 1:nrow(buslist)){
   tryCatch({
 
-    # ========== ´ë»ó ³ë¼±ÀÇ ³ë¼±ID ¹× ³ë¼±¹øÈ£ ==========
-    line_ID=buslist[i,1] # ³ë¼±ID
-    line_NO=as.character(buslist[i,3]) # ³ë¼±¹øÈ£
+    # ========== ëŒ€ìƒ ë…¸ì„ ì˜ ë…¸ì„ ID ë° ë…¸ì„ ë²ˆí˜¸ ==========
+    line_ID=buslist[i,1] # ë…¸ì„ ID
+    line_NO=as.character(buslist[i,3]) # ë…¸ì„ ë²ˆí˜¸
     oneline <- subset(total_bus,total_bus$line == as.character(line_ID)) # Get bus number wanted
     oneline$departure <- as.POSIXct(as.character(oneline$departure),"%Y%m%d%H%M%S", tz="Asia/Seoul") # convert time to POSIXct format
-    oneline$boardtime <- as.POSIXct(as.character(oneline$boardtime),"%Y%m%d%H%M%S", tz="Asia/Seoul") # convert time to POSIXct format. ½Ã°£ ´ÜÀ§·Î ¹İ¿Ã¸²
-    oneline$alighttime <- as.POSIXct(as.character(oneline$alighttime),"%Y%m%d%H%M%S", tz="Asia/Seoul") # convert time to POSIXct format. ½Ã°£ ´ÜÀ§·Î ¹İ¿Ã¸²
+    oneline$boardtime <- as.POSIXct(as.character(oneline$boardtime),"%Y%m%d%H%M%S", tz="Asia/Seoul") # convert time to POSIXct format. ì‹œê°„ ë‹¨ìœ„ë¡œ ë°˜ì˜¬ë¦¼
+    oneline$alighttime <- as.POSIXct(as.character(oneline$alighttime),"%Y%m%d%H%M%S", tz="Asia/Seoul") # convert time to POSIXct format. ì‹œê°„ ë‹¨ìœ„ë¡œ ë°˜ì˜¬ë¦¼
     oneline <- transform(oneline, dispatch=as.numeric(factor(departure))) # grouping by dispatch order
     oneline$alight_tag <- oneline$alightstation!="~" # TRUE if the passenger tagged his/her card when alight
     
-    # ========== Á¤·ùÀå ¼ø¼­(¸î ¹øÂ° Á¤·ùÀåÀÎÁö) Ãß°¡ ==========
+    # ========== ì •ë¥˜ì¥ ìˆœì„œ(ëª‡ ë²ˆì§¸ ì •ë¥˜ì¥ì¸ì§€) ì¶”ê°€ ==========
     stationlist <- subset(stationlistAll, LineID==as.character(line_ID))
-    stationlist <- unique(stationlist) # °øµ¿¹èÂ÷ ³ë¼±ÀÎ °æ¿ì Áßº¹ÀÌ ÀÖ¾î¼­ ±×°ÍÀ» Á¦°ÅÇÔ
+    stationlist <- unique(stationlist) # ê³µë™ë°°ì°¨ ë…¸ì„ ì¸ ê²½ìš° ì¤‘ë³µì´ ìˆì–´ì„œ ê·¸ê²ƒì„ ì œê±°í•¨
     oneline$boardstation <- as.integer(oneline$boardstation)
     oneline <- merge(oneline, stationlist[,c("StationID","StationNumber")], by.x="boardstation", by.y="StationID", all.x=T)
     colnames(oneline)[which(names(oneline) == "StationNumber")] <- "boardorder"
@@ -67,7 +58,7 @@ for(i in 1:nrow(buslist)){
     oneline <- merge(oneline, stationlist[,c("StationID","StationNumber")], by.x="alightstation", by.y="StationID", all.x=T)
     colnames(oneline)[which(names(oneline) == "StationNumber")] <- "alightorder"
 
-    # ========== ½º¸¶Æ®Ä«µå µ¥ÀÌÅÍÀÇ ½ÂÂ÷¿Í ÇÏÂ÷¸¦ ºĞ¸® ==========
+    # ========== ìŠ¤ë§ˆíŠ¸ì¹´ë“œ ë°ì´í„°ì˜ ìŠ¹ì°¨ì™€ í•˜ì°¨ë¥¼ ë¶„ë¦¬ ==========
     record_board <- oneline[,c("departure","dispatch","boardstation","boardorder","boardtime","multiple","alight_tag")]
     names(record_board) <- c("departure","dispatch","stnID","stnorder","time","board","alight_tag")
     record_alight <- oneline[,c("departure","dispatch","alightstation","alightorder","alighttime","multiple","alight_tag")]
@@ -77,7 +68,7 @@ for(i in 1:nrow(buslist)){
     record$board[is.na(record$board)] <- 0
     record$alight[is.na(record$alight)] <- 0
 
-    # ========== ÀçÂ÷ÀÎ¿ø »êÁ¤ ==========
+    # ========== ì¬ì°¨ì¸ì› ì‚°ì • ==========
     record$diff_tot <- record$board - record$alight
     record$diff_tag[record$alight_tag==T] <- record$diff_tot[record$alight_tag==T] # include non-alight-tag
     record$diff_tag[record$alight_tag==F] <- 0 # exclude non-alight-tag
@@ -86,56 +77,56 @@ for(i in 1:nrow(buslist)){
     record$occ_tag <- ave(record$diff_tag, record$dispatch, FUN=cumsum) # exclude non-alight-tag
     record<-record[,c('departure','dispatch','stnID','stnorder','time','board','alight','diff_tot','diff_tag','alight_tag','occ_tot','occ_tag')]
 
-    # ========== ½Ã°£À» ½Ã°£´ë(timeslot)·Î È¯»ê ==========
+    # ========== ì‹œê°„ì„ ì‹œê°„ëŒ€(timeslot)ë¡œ í™˜ì‚° ==========
     record$timeslot <- floor(((as.numeric(record$time) + 9*3600) %% 86400) / 3600)
     
-    # ========== °¢ ¿îÇàÈ¸Â÷(dispatch) ´ÜÀ§·Î Á¤·ùÀåº° ÀçÂ÷ÀÎ¿ø Á¤¸® ==========
+    # ========== ê° ìš´í–‰íšŒì°¨(dispatch) ë‹¨ìœ„ë¡œ ì •ë¥˜ì¥ë³„ ì¬ì°¨ì¸ì› ì •ë¦¬ ==========
     occ_all <- c()
 
     for(j in unique(record$dispatch)){
       
-      # ÇØ´ç dispatchÀÇ record ÃßÃâ
+      # í•´ë‹¹ dispatchì˜ record ì¶”ì¶œ
       recordSS <- subset(record, dispatch==j)
       recordSS <- subset(recordSS, !is.na(stnorder))
       
-      # ´ÙÀ½ Á¤·ùÀåÀ¸·Î ¶°³ª´Â ¼ø°£¿¡ ´ëÇÑ record¸¸ ³²±è
+      # ë‹¤ìŒ ì •ë¥˜ì¥ìœ¼ë¡œ ë– ë‚˜ëŠ” ìˆœê°„ì— ëŒ€í•œ recordë§Œ ë‚¨ê¹€
       for(k in 1:(nrow(recordSS)-1)){
         recordSS$tonextstop[k] <- recordSS$stnorder[k] != recordSS$stnorder[k+1]
       }
-      recordSS$tonextstop[nrow(recordSS)] <- FALSE # ¸¶Áö¸·ÁÙÀº FALSE
+      recordSS$tonextstop[nrow(recordSS)] <- FALSE # ë§ˆì§€ë§‰ì¤„ì€ FALSE
       recordSS <- subset(recordSS, tonextstop == TRUE)
       occ_all <- rbind(occ_all, recordSS)
     }
     
-    # ½ÂÇÏÂ÷ÀÎ¿øÀº ½Ã°£´ëº°·Î ÇÕ»ê(5ÀÏÄ¡ µ¥ÀÌÅÍ¶ó¼­ 5·Î ³ª´®), ÀçÂ÷ÀÎ¿øÀº ½Ã°£´ëº°·Î Æò±Õ
+    # ìŠ¹í•˜ì°¨ì¸ì›ì€ ì‹œê°„ëŒ€ë³„ë¡œ í•©ì‚°(5ì¼ì¹˜ ë°ì´í„°ë¼ì„œ 5ë¡œ ë‚˜ëˆ”), ì¬ì°¨ì¸ì›ì€ ì‹œê°„ëŒ€ë³„ë¡œ í‰ê· 
     occ_hour <- occ_all %>% group_by(timeslot, stnorder) %>% summarise(board=sum(board)/5, alight=sum(alight)/5, occ = mean(occ_tot))
     
-    # ========== ÀüÃ³¸®°á°ú(result µ¥ÀÌÅÍÇÁ·¹ÀÓ) ¸¸µé±â =========
-    # ³ë¼± ¸µÅ©¸ñ·Ï ¸¸µé±â
+    # ========== ì „ì²˜ë¦¬ê²°ê³¼(result ë°ì´í„°í”„ë ˆì„) ë§Œë“¤ê¸° =========
+    # ë…¸ì„  ë§í¬ëª©ë¡ ë§Œë“¤ê¸°
     linklist<-cbind(stationlist, rbind(stationlist[-1,-1],NA))
     colnames(linklist) <- c("LineID", "S.ID", "S.Number", "S.Name", "S.Distance", "S.CoordX", "S.CoordY", "E.ID", "E.Number", "E.Name", "E.Distance", "E.CoordX", "E.CoordY")
     linklist$LinkLength <- abs(linklist$S.Distance-linklist$E.Distance)
     linklist<-linklist[-nrow(linklist),]
     linklist<-linklist[,-c(5,11)]
-    linklist$S.CoordX <- floor(linklist$S.CoordX/100)+((linklist$S.CoordX/100)-floor(linklist$S.CoordX/100))*100/60 #ÁÂÇ¥ º¯È¯(deg ´ÜÀ§)
-    linklist$S.CoordY <- floor(linklist$S.CoordY/100)+((linklist$S.CoordY/100)-floor(linklist$S.CoordY/100))*100/60 #ÁÂÇ¥ º¯È¯(deg ´ÜÀ§)
-    linklist$E.CoordX <- floor(linklist$E.CoordX/100)+((linklist$E.CoordX/100)-floor(linklist$E.CoordX/100))*100/60 #ÁÂÇ¥ º¯È¯(deg ´ÜÀ§)
-    linklist$E.CoordY <- floor(linklist$E.CoordY/100)+((linklist$E.CoordY/100)-floor(linklist$E.CoordY/100))*100/60 #ÁÂÇ¥ º¯È¯(deg ´ÜÀ§)
+    linklist$S.CoordX <- floor(linklist$S.CoordX/100)+((linklist$S.CoordX/100)-floor(linklist$S.CoordX/100))*100/60 #ì¢Œí‘œ ë³€í™˜(deg ë‹¨ìœ„)
+    linklist$S.CoordY <- floor(linklist$S.CoordY/100)+((linklist$S.CoordY/100)-floor(linklist$S.CoordY/100))*100/60 #ì¢Œí‘œ ë³€í™˜(deg ë‹¨ìœ„)
+    linklist$E.CoordX <- floor(linklist$E.CoordX/100)+((linklist$E.CoordX/100)-floor(linklist$E.CoordX/100))*100/60 #ì¢Œí‘œ ë³€í™˜(deg ë‹¨ìœ„)
+    linklist$E.CoordY <- floor(linklist$E.CoordY/100)+((linklist$E.CoordY/100)-floor(linklist$E.CoordY/100))*100/60 #ì¢Œí‘œ ë³€í™˜(deg ë‹¨ìœ„)
     linklist$Geom <- paste0("LINESTRING(",linklist$S.CoordX," ",linklist$S.CoordY,",",linklist$E.CoordX," ",linklist$E.CoordY,")")
     linklist <- cbind(line_NO, linklist)
     linklist <- rename(linklist, "LineNo"="line_NO")
     
-    # 0½ÃºÎÅÍ 23½Ã±îÁö ¸µÅ©¸ñ·Ï ¹İº¹
+    # 0ì‹œë¶€í„° 23ì‹œê¹Œì§€ ë§í¬ëª©ë¡ ë°˜ë³µ
     result <- c()
     for(hr in 0:23){
       linklist$timeslot <- hr
       result <- rbind(result, linklist)
     }
     
-    # result µ¥ÀÌÅÍÇÁ·¹ÀÓ¿¡ ÀçÂ÷ÀÎ¿ø, ½ÂÇÏÂ÷ÀÎ¿ø ÇÕÄ¡±â
+    # result ë°ì´í„°í”„ë ˆì„ì— ì¬ì°¨ì¸ì›, ìŠ¹í•˜ì°¨ì¸ì› í•©ì¹˜ê¸°
     result <- left_join(result, occ_hour, by=c("S.Number"="stnorder", "timeslot"))
 
-    # ½Ã°£´ëº°·Î ÇØ´ç ½Ã°£´ë¿¡ ¹ö½º°¡ ½ÇÁ¦·Î ¿îÇàÇÑ ±¸°£¸¸ ³²±â±â(Ã¹Â÷, ¸·Â÷ ½Ã°£´ë °í·Á)
+    # ì‹œê°„ëŒ€ë³„ë¡œ í•´ë‹¹ ì‹œê°„ëŒ€ì— ë²„ìŠ¤ê°€ ì‹¤ì œë¡œ ìš´í–‰í•œ êµ¬ê°„ë§Œ ë‚¨ê¸°ê¸°(ì²«ì°¨, ë§‰ì°¨ ì‹œê°„ëŒ€ ê³ ë ¤)
     result$passed <- TRUE
     for(ts in unique(result$timeslot)){
       temp <- subset(result, timeslot==ts)
@@ -156,7 +147,7 @@ for(i in 1:nrow(buslist)){
       result[result$timeslot==ts,] <- temp
     }
     
-    # board, alight, occupancy°¡ NAÀÎ Çà¿¡ °ª Ã¤¿ì±â
+    # board, alight, occupancyê°€ NAì¸ í–‰ì— ê°’ ì±„ìš°ê¸°
     result <- subset(result, passed==TRUE)
     result$board[is.na(result$board)] <- 0
     result$alight[is.na(result$alight)] <- 0
@@ -165,21 +156,21 @@ for(i in 1:nrow(buslist)){
     }
     result$occ <- round(result$occ, 1)
     
-    # timeslotÀ» ½Ã°£ µ¥ÀÌÅÍÇüÀ¸·Î È¯»ê
+    # timeslotì„ ì‹œê°„ ë°ì´í„°í˜•ìœ¼ë¡œ í™˜ì‚°
     result$timeslot <- paste0(sprintf("%02d", result$timeslot),":00:00")
     
-    # ÇÊ¿äÇÑ ¿­¸¸ ³²±ä µÚ ÀüÃ¼ ÀüÃ³¸®°á°ú(totalresult)¿¡ ÇÕÄ¡±â
+    # í•„ìš”í•œ ì—´ë§Œ ë‚¨ê¸´ ë’¤ ì „ì²´ ì „ì²˜ë¦¬ê²°ê³¼(totalresult)ì— í•©ì¹˜ê¸°
     result <- result[,c("LineNo","S.Number","S.Name","E.Number","E.Name","Geom","timeslot","board","alight","occ")]
-    names(result) <- c("³ë¼±¹øÈ£", "Á¤·ùÀå ¼ø¼­ 1", "Á¤·ùÀå ÀÌ¸§ 1", "Á¤·ùÀå ¼ø¼­ 2", "Á¤·ùÀå ÀÌ¸§ 2", "Geom", "½Ã°£´ë", "½Ã°£´ç ½ÂÂ÷ÀÎ¿ø", "½Ã°£´ç ÇÏÂ÷ÀÎ¿ø", "Æò±Õ ÀçÂ÷ÀÎ¿ø")
+    names(result) <- c("ë…¸ì„ ë²ˆí˜¸", "ì •ë¥˜ì¥ ìˆœì„œ 1", "ì •ë¥˜ì¥ ì´ë¦„ 1", "ì •ë¥˜ì¥ ìˆœì„œ 2", "ì •ë¥˜ì¥ ì´ë¦„ 2", "Geom", "ì‹œê°„ëŒ€", "ì‹œê°„ë‹¹ ìŠ¹ì°¨ì¸ì›", "ì‹œê°„ë‹¹ í•˜ì°¨ì¸ì›", "í‰ê·  ì¬ì°¨ì¸ì›")
     totalresult <- rbind(totalresult, result)
     
-    # ========== ±âÃÊÅë°è·® »êÃâ ==========
+    # ========== ê¸°ì´ˆí†µê³„ëŸ‰ ì‚°ì¶œ ==========
     basicstat <- rbind(basicstat, c(line_NO, max(oneline$dispatch)/5, sum(oneline$multiple)/5))
     
-    # ========== geojson ¸¸µé±â ==========
+    # ========== geojson ë§Œë“¤ê¸° ==========
     geojson_line <- '{"type":"Feature","geometry":{"type":"LineString","coordinates":['
-    stationlist$CoordX <- floor(stationlist$CoordX/100)+((stationlist$CoordX/100)-floor(stationlist$CoordX/100))*100/60 #ÁÂÇ¥ º¯È¯(deg ´ÜÀ§)
-    stationlist$CoordY <- floor(stationlist$CoordY/100)+((stationlist$CoordY/100)-floor(stationlist$CoordY/100))*100/60 #ÁÂÇ¥ º¯È¯(deg ´ÜÀ§)
+    stationlist$CoordX <- floor(stationlist$CoordX/100)+((stationlist$CoordX/100)-floor(stationlist$CoordX/100))*100/60 #ì¢Œí‘œ ë³€í™˜(deg ë‹¨ìœ„)
+    stationlist$CoordY <- floor(stationlist$CoordY/100)+((stationlist$CoordY/100)-floor(stationlist$CoordY/100))*100/60 #ì¢Œí‘œ ë³€í™˜(deg ë‹¨ìœ„)
     for(n in 1:nrow(stationlist)){
       timestamp <- 1564184363 + n*60
       geojson_line <- paste0(geojson_line,"[",stationlist$CoordX[n],",",stationlist$CoordY[n],",",0,",",timestamp,"]")
@@ -193,15 +184,15 @@ for(i in 1:nrow(buslist)){
   }, error=function(e){print(paste0("error in ",line_ID," ",line_NO))})
 }
 
-# ========= ÀüÃ³¸® °á°ú ÀúÀå =========
+# ========= ì „ì²˜ë¦¬ ê²°ê³¼ ì €ì¥ =========
 write.csv(totalresult, 'Result_1.3/preprocessed_201210.csv', row.names=F)
 
-# ========= ÀÏÀÏ ¿îÇàÈ½¼ö ¹× ÀÌ¿ë°´¼ö ÀúÀå =========
+# ========= ì¼ì¼ ìš´í–‰íšŸìˆ˜ ë° ì´ìš©ê°ìˆ˜ ì €ì¥ =========
 basicstat <- as.data.frame(basicstat)
-names(basicstat) <- c("³ë¼±¹øÈ£", "ÀÏ ¿îÇàÈ½¼ö", "ÀÏ ÀÌ¿ë°´¼ö")
+names(basicstat) <- c("ë…¸ì„ ë²ˆí˜¸", "ì¼ ìš´í–‰íšŸìˆ˜", "ì¼ ì´ìš©ê°ìˆ˜")
 write.csv(basicstat, 'Result_1.3/dailyfreqridership_201210.csv', row.names=F)
 
-# ========= geojson ÀúÀå =========
+# ========= geojson ì €ì¥ =========
 geojson <- as.data.frame(geojson)
-names(geojson) <- c("³ë¼±¹øÈ£", "geojson")
+names(geojson) <- c("ë…¸ì„ ë²ˆí˜¸", "geojson")
 write.csv(geojson, 'Result_1.3/geojson_201210.csv', row.names=F)
